@@ -1,2 +1,2 @@
-# minecraft-fabric-1.18-template ![Build](https://github.com/DeflatedPickle/minecraft-fabric-1.18-template/actions/workflows/gradle-build.yml/badge.svg)
-A template for getting started with Minecraft 1.18 Fabric mods using Kotlin
+# PopEnchantTagsResuscitated ![Build](https://github.com/DeflatedPickle/PopEnchantTagsResuscitated/actions/workflows/gradle-build.yml/badge.svg)
+A Minecraft Fabric mod to show the enchants of a selected item above its name 
