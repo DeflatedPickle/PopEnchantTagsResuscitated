@@ -5,15 +5,18 @@ package com.deflatedpickle.popenchanttags
 import net.fabricmc.api.ClientModInitializer
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.inventory.Inventories
+import net.minecraft.item.BlockItem
 import net.minecraft.item.EnchantedBookItem
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.nbt.NbtList
 import net.minecraft.text.LiteralText
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.collection.DefaultedList
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
-import java.awt.SystemColor.text
 
 @Suppress("UNUSED")
 object PopEnchantTagsResuscitated : ClientModInitializer {
@@ -55,20 +58,37 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
         val textRenderer = mc.textRenderer
         val currentStack = mc.player!!.mainHandStack
 
-        val tagList: NbtList = when (currentStack.item) {
-            is EnchantedBookItem -> EnchantedBookItem.getEnchantmentNbt(currentStack)
-            else -> currentStack.enchantments
+        val textList = mutableListOf<Text>()
+
+        if (currentStack.item == Items.SHULKER_BOX) {
+            BlockItem.getBlockEntityNbt(currentStack)?.let { nbtCompound ->
+                if (nbtCompound.contains("Items")) {
+                    val defaultedList = DefaultedList.ofSize(27, ItemStack.EMPTY)
+                    Inventories.readNbt(nbtCompound, defaultedList)
+
+                    for (i in defaultedList) {
+                        if (i.isEmpty) continue
+                        textList.add(i.name)
+                    }
+                }
+            }
+        } else if (currentStack.isEnchantable) {
+            val tagList: NbtList = when (currentStack.item) {
+                is EnchantedBookItem -> EnchantedBookItem.getEnchantmentNbt(currentStack)
+                else -> currentStack.enchantments
+            }
+            ItemStack.appendEnchantments(textList, tagList)
         }
 
-        val enchantmentList = mutableListOf<Text>()
-        ItemStack.appendEnchantments(enchantmentList, tagList)
-
         val text = LiteralText("").apply {
-            for ((i, s) in enchantmentList.withIndex()) {
+            for ((i, s) in textList.take(4).withIndex()) {
                 append(s)
-                if (i < enchantmentList.size - 1) {
+                if (i < textList.size - 1) {
                     append(", ")
                 }
+            }
+            if (textList.size > 4) {
+                append("...")
             }
         }.formatted(Formatting.ITALIC, Formatting.GRAY)
 
