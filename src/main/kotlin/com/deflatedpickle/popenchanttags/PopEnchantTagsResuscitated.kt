@@ -5,15 +5,18 @@ package com.deflatedpickle.popenchanttags
 import net.fabricmc.api.ClientModInitializer
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.entity.effect.StatusEffectUtil
 import net.minecraft.inventory.Inventories
 import net.minecraft.item.BlockItem
 import net.minecraft.item.EnchantedBookItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.nbt.NbtList
+import net.minecraft.item.PotionItem
+import net.minecraft.potion.PotionUtil
 import net.minecraft.text.LiteralText
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableText
 import net.minecraft.util.Formatting
 import net.minecraft.util.collection.DefaultedList
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
@@ -68,16 +71,34 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
 
                     for (i in defaultedList) {
                         if (i.isEmpty) continue
-                        textList.add(i.name)
+                        val text = i.name.shallowCopy()
+                        text.append(" x").append(i.count.toString())
+                        textList.add(text)
                     }
                 }
             }
-        } else if (currentStack.isEnchantable) {
-            val tagList: NbtList = when (currentStack.item) {
-                is EnchantedBookItem -> EnchantedBookItem.getEnchantmentNbt(currentStack)
-                else -> currentStack.enchantments
+        } else if (currentStack.item is PotionItem) {
+            val effects = PotionUtil.getPotionEffects(currentStack)
+
+            if (effects.isEmpty()) {
+                textList.add(TranslatableText("effect.none"))
+            } else {
+                for (i in effects) {
+                    var text = TranslatableText(i.translationKey)
+                    if (i.duration > 20) {
+                        text = TranslatableText(
+                            "potion.withDuration",
+                            text,
+                            StatusEffectUtil.durationToString(i, 1.0f)
+                        )
+                    }
+                    textList.add(text)
+                }
             }
-            ItemStack.appendEnchantments(textList, tagList)
+        } else if (currentStack.item == Items.ENCHANTED_BOOK) {
+            ItemStack.appendEnchantments(textList, EnchantedBookItem.getEnchantmentNbt(currentStack))
+        } else if (currentStack.hasEnchantments()) {
+            ItemStack.appendEnchantments(textList, currentStack.enchantments)
         }
 
         val text = LiteralText("").apply {
