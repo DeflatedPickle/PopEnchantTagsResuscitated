@@ -12,6 +12,7 @@ import net.minecraft.item.EnchantedBookItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.PotionItem
+import net.minecraft.item.TippedArrowItem
 import net.minecraft.potion.PotionUtil
 import net.minecraft.text.LiteralText
 import net.minecraft.text.MutableText
@@ -77,7 +78,7 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
                     }
                 }
             }
-        } else if (currentStack.item is PotionItem) {
+        } else if (currentStack.item is PotionItem || currentStack.item is TippedArrowItem) {
             val effects = PotionUtil.getPotionEffects(currentStack)
 
             if (effects.isEmpty()) {
@@ -89,16 +90,27 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
                         text = TranslatableText(
                             "potion.withDuration",
                             text,
-                            StatusEffectUtil.durationToString(i, 1.0f)
+                            StatusEffectUtil.durationToString(
+                                i,
+                                when (currentStack.item) {
+                                    is PotionItem -> 1.0f
+                                    is TippedArrowItem -> 0.125f
+                                    else -> 0.0f
+                                }
+                            )
                         )
                     }
                     textList.add(text)
                 }
             }
-        } else if (currentStack.item == Items.ENCHANTED_BOOK) {
-            ItemStack.appendEnchantments(textList, EnchantedBookItem.getEnchantmentNbt(currentStack))
-        } else if (currentStack.hasEnchantments()) {
-            ItemStack.appendEnchantments(textList, currentStack.enchantments)
+        } else if (currentStack.item == Items.ENCHANTED_BOOK || currentStack.hasEnchantments()) {
+            ItemStack.appendEnchantments(
+                textList,
+                when (currentStack.item) {
+                    is EnchantedBookItem -> EnchantedBookItem.getEnchantmentNbt(currentStack)
+                    else -> currentStack.enchantments
+                }
+            )
         }
 
         val text = LiteralText("").apply {
