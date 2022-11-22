@@ -38,6 +38,6 @@ public class MixinInGameHud extends DrawableHelper {
       locals = LocalCapture.CAPTURE_FAILEXCEPTION)
   public void drawExtraText(
       MatrixStack matrices, CallbackInfo ci, MutableText mutableText, int i, int j, int k, int l) {
-    PopEnchantTagsResuscitated.INSTANCE.drawExtraText(matrices, ci, mutableText, i, j, k, l);
+    PopEnchantTagsResuscitated.INSTANCE.drawExtraText(matrices, i, j, k, l);
   }
 }

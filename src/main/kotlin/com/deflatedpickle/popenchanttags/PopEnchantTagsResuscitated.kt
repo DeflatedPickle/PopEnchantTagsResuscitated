@@ -13,10 +13,10 @@ import net.minecraft.item.Items
 import net.minecraft.item.PotionItem
 import net.minecraft.item.TippedArrowItem
 import net.minecraft.potion.PotionUtil
-import net.minecraft.text.LiteralText
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import net.minecraft.text.TranslatableText
+import net.minecraft.text.Text.literal
+import net.minecraft.text.Text.translatable
 import net.minecraft.util.Formatting
 import net.minecraft.util.collection.DefaultedList
 import org.quiltmc.loader.api.ModContainer
@@ -31,7 +31,7 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
     private const val AUTHOR = "$[author]"
     private const val VERSION = "$[version]"
 
-    val DISTANCE = 10
+    const val DISTANCE = 10
 
     override fun onInitializeClient(mod: ModContainer) {
         println(listOf(MOD_ID, NAME, GROUP, AUTHOR, VERSION))
@@ -51,9 +51,7 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
     }
 
     fun drawExtraText(
-        matrices: MatrixStack?,
-        ci: CallbackInfo?,
-        mutableText: MutableText?,
+        matrices: MatrixStack,
         width: Int,
         x: Int,
         y: Int,
@@ -73,7 +71,7 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
 
                     for (i in defaultedList) {
                         if (i.isEmpty) continue
-                        val text = i.name.shallowCopy()
+                        val text = i.name.copyContentOnly()
                         text.append(" x").append(i.count.toString())
                         textList.add(text)
                     }
@@ -83,12 +81,12 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
             val effects = PotionUtil.getPotionEffects(currentStack)
 
             if (effects.isEmpty()) {
-                textList.add(TranslatableText("effect.none"))
+                textList.add(translatable("effect.none"))
             } else {
                 for (i in effects) {
-                    var text = TranslatableText(i.translationKey)
+                    var text = translatable(i.translationKey)
                     if (i.duration > 20) {
-                        text = TranslatableText(
+                        text = translatable(
                             "potion.withDuration",
                             text,
                             StatusEffectUtil.durationToString(
@@ -114,7 +112,7 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
             )
         }
 
-        val text = LiteralText("").apply {
+        val text = literal("").apply {
             for ((i, s) in textList.take(4).withIndex()) {
                 append(s)
                 if (i < textList.size - 1) {
