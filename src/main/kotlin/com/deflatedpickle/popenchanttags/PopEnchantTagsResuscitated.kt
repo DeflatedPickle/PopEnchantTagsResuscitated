@@ -2,7 +2,6 @@
 
 package com.deflatedpickle.popenchanttags
 
-import net.fabricmc.api.ClientModInitializer
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.effect.StatusEffectUtil
@@ -20,6 +19,8 @@ import net.minecraft.text.Text
 import net.minecraft.text.TranslatableText
 import net.minecraft.util.Formatting
 import net.minecraft.util.collection.DefaultedList
+import org.quiltmc.loader.api.ModContainer
+import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
 @Suppress("UNUSED")
@@ -32,7 +33,7 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
 
     val DISTANCE = 10
 
-    override fun onInitializeClient() {
+    override fun onInitializeClient(mod: ModContainer) {
         println(listOf(MOD_ID, NAME, GROUP, AUTHOR, VERSION))
     }
 
@@ -65,7 +66,7 @@ object PopEnchantTagsResuscitated : ClientModInitializer {
         val textList = mutableListOf<Text>()
 
         if (currentStack.item == Items.SHULKER_BOX) {
-            BlockItem.getBlockEntityNbt(currentStack)?.let { nbtCompound ->
+            BlockItem.getBlockEntityNbtFromStack(currentStack)?.let { nbtCompound ->
                 if (nbtCompound.contains("Items")) {
                     val defaultedList = DefaultedList.ofSize(27, ItemStack.EMPTY)
                     Inventories.readNbt(nbtCompound, defaultedList)
